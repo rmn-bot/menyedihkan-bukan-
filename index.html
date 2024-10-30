@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RAMON.G</title>
+    
+    <!-- Link Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Staatliches&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Staatliches', sans-serif;
+            color: white;
+            text-align: center;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            user-select: none;
+            overflow: hidden;
+            cursor: none;
+        }
+
+        #background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('poto.jpg');
+            background-size: cover;
+            background-position: center;
+            z-index: -1;
+            transition: filter 0.5s ease;
+        }
+
+        .blur-background {
+            filter: blur(8px);
+        }
+
+        h1 {
+            color: black;
+            font-family: 'Brush Script MT', sans-serif;
+            animation: colorChange 3s infinite;
+            text-shadow: 0 0 50px white;
+            margin: 0;
+            position: relative;
+            top: 200px;
+        }
+
+        @keyframes colorChange {
+            0% { color: black; }
+            50% { color: #ff6347; }
+            100% { color: black; }
+        }
+
+        #lyrics {
+            background-image: url('lyric-bg.jpg');
+            background-size: cover;
+            background-position: center;
+            color: white;
+            font-weight: bold;
+            font-size: 30px;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px;
+            max-width: 600px;
+            height: 150px;
+            overflow: hidden;
+            transition: opacity 0.5s ease-in-out;
+            text-shadow: 0 0 35px rgba(252, 182, 193);
+            font-family: 'Lucida Bright', serif;
+        }
+
+        button {
+            padding: 10px 30px;
+            font-size: 15px;
+            cursor: pointer;
+            border: none;
+            border-radius: 20px;
+            background-color: #ffc0cb;
+            color: white;
+            font-family: 'Staatliches', sans-serif;
+            margin-top: 20px;
+        }
+
+        #backButton {
+            display: none;
+        }
+
+        #profilePic {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            border: 2px solid white;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.3);
+            object-fit: cover;
+            z-index: 10;
+            cursor: pointer;
+        }
+
+        #profileText {
+            position: fixed;
+            top: 40px;
+            right: 90px;
+            font-size: 20px;
+            font-family: 'Staatliches', sans-serif;
+            font-weight: bold;
+            display: none;
+        }
+
+        #profileText .ramon {
+            color: pink;
+        }
+
+        #profileText .dotG {
+            color: white;
+        }
+
+        .star {
+            position: absolute;
+            width: 5px;
+            height: 5px;
+            background-color: #ff69b4;
+            border-radius: 50%;
+            pointer-events: none;
+            animation: star-animation 0.5s linear forwards;
+        }
+
+        @keyframes star-animation {
+            0% {
+                transform: scale(1);
+                opacity: 1;
+            }
+            100% {
+                transform: scale(0.5);
+                opacity: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="background"></div>
+
+    <img id="profilePic" src="ra.jpg" alt="Foto Profil">
+    <div id="profileText"><span class="ramon"></span><span class="dotG">.G</span></div>
+
+    <h1 id="songTitle">8 letters</h1>
+    <div id="lyrics"></div>
+    <div id="smallText"></div> <!-- Elemen baru untuk teks kecil -->
+    <button id="playButton">Mulai</button>
+    <button id="backButton">Back</button>
+
+    <audio id="audio" src="ungkap.mp3" preload="auto"></audio>
+
+    <script>
+        const lyricsData = [
+            { text: "When I close my eyes", duration: 2 },
+            { text: "It's you there in my mind", duration: 3 },
+            { text: "When I close my eyes", duration: 3 },
+            { text: "If all it is is eight letters", duration: 2 },
+            { text: "Why is it so hard to say?", duration: 2 },
+            { text: "If all it is is eight letters", duration: 2 },
+            { text: "Why am I in my own way?", duration: 3 },
+            { text: "Why do I pull you close", duration: 3 },
+            { text: "And then ask you for space", duration: 2 },
+            { text: "If all it is is eight letters", duration: 2 },
+            { text: "Why is it so hard to say?", duration: 3 },
+            { text: "tingalkan pesan anda dengan cara klik Profil di pojok kanan atas ayooo!!", duration: 2 },
+        ];
+
+        let lyricIndex = 0;
+        const audio = document.getElementById('audio');
+        const playButton = document.getElementById('playButton');
+        const backButton = document.getElementById('backButton');
+        const songTitle = document.getElementById('songTitle');
+        const lyricsDiv = document.getElementById('lyrics');
+        const background = document.getElementById('background');
+        const profileText = document.getElementById('profileText');
+        const ramonText = profileText.querySelector('.ramon');
+        const profilePic = document.getElementById('profilePic');
+
+        function resetAll() {
+            lyricIndex = 0;
+            lyricsDiv.innerText = "";
+            songTitle.style.display = "block";
+            playButton.style.display = "block";
+            backButton.style.display = "none";
+            background.classList.remove('blur-background');
+            audio.pause();
+            audio.currentTime = 0;
+            ramonText.innerText = "";
+            profilePic.removeEventListener('click', redirectToNGL);
+        }
+
+        function showLyric() {
+            if (lyricIndex < lyricsData.length) {
+                const { text, duration } = lyricsData[lyricIndex];
+                const delay = duration * 1000;
+
+                lyricsDiv.style.opacity = 0;
+                setTimeout(() => {
+                    lyricsDiv.innerText = text;
+                    lyricsDiv.style.opacity = 1;
+                }, 500);
+
+                lyricIndex++;
+                setTimeout(showLyric, delay);
+            } else {
+                setTimeout(() => {
+                    backButton.style.display = "block";
+                    profilePic.addEventListener('click', redirectToNGL); // Tambahkan event listener setelah tombol Back muncul
+                }, 1000);
+            }
+        }
+
+        function typeWriter(text, element, delay = 100) {
+            let index = 0;
+            function type() {
+                if (index < text.length) {
+                    element.innerHTML += text.charAt(index);
+                    index++;
+                    setTimeout(type, delay);
+                }
+            }
+            type();
+        }
+
+        function redirectToNGL() {
+            window.location.href = "https://ngl.link/cek_ejang.bercahaya"; // Ganti dengan link NGL Anda
+        }
+
+        playButton.addEventListener('click', () => {
+            audio.play().catch(error => {
+                console.log("Audio tidak dapat diputar secara otomatis:", error);
+            });
+            lyricsDiv.innerText = "";
+            songTitle.style.display = "none";
+            playButton.style.display = "none";
+            background.classList.add('blur-background');
+
+            profileText.style.display = "block";
+            ramonText.innerText = "";
+            typeWriter("Ramon", ramonText);
+
+            setTimeout(showLyric, 7000);
+        });
+
+        backButton.addEventListener('click', () => {
+            resetAll();
+        });
+
+        document.addEventListener('contextmenu', (e) => {
+            e.preventDefault();
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            const star = document.createElement('div');
+            star.classList.add('star');
+            star.style.left = `${e.pageX}px`;
+            star.style.top = `${e.pageY}px`;
+            document.body.appendChild(star);
+
+            setTimeout(() => {
+                star.remove();
+            }, 500);
+        });
+    </script>
+</body>
+</html>
